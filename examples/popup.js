@@ -1,18 +1,30 @@
-goog.require('ol.Map');
-goog.require('ol.Overlay');
-goog.require('ol.View');
-goog.require('ol.coordinate');
-goog.require('ol.layer.Tile');
-goog.require('ol.proj');
-goog.require('ol.source.TileJSON');
+import Map from '../src/ol/Map.js';
+import Overlay from '../src/ol/Overlay.js';
+import View from '../src/ol/View.js';
+import {toStringHDMS} from '../src/ol/coordinate.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import {toLonLat} from '../src/ol/proj.js';
+import TileJSON from '../src/ol/source/TileJSON.js';
 
 
 /**
  * Elements that make up the popup.
  */
-var container = document.getElementById('popup');
-var content = document.getElementById('popup-content');
-var closer = document.getElementById('popup-closer');
+const container = document.getElementById('popup');
+const content = document.getElementById('popup-content');
+const closer = document.getElementById('popup-closer');
+
+
+/**
+ * Create an overlay to anchor the popup to the map.
+ */
+const overlay = new Overlay({
+  element: container,
+  autoPan: true,
+  autoPanAnimation: {
+    duration: 250
+  }
+});
 
 
 /**
@@ -27,34 +39,20 @@ closer.onclick = function() {
 
 
 /**
- * Create an overlay to anchor the popup to the map.
- */
-var overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-  element: container,
-  autoPan: true,
-  autoPanAnimation: {
-    duration: 250
-  }
-}));
-
-
-/**
  * Create the map.
  */
-var map = new ol.Map({
+const map = new Map({
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.TileJSON({
-        url: 'http://api.tiles.mapbox.com/v3/' +
-            'mapbox.natural-earth-hypso-bathy.jsonp',
+    new TileLayer({
+      source: new TileJSON({
+        url: 'https://api.tiles.mapbox.com/v3/mapbox.natural-earth-hypso-bathy.json?secure',
         crossOrigin: 'anonymous'
       })
     })
   ],
-  renderer: exampleNS.getRendererFromQueryString(),
   overlays: [overlay],
   target: 'map',
-  view: new ol.View({
+  view: new View({
     center: [0, 0],
     zoom: 2
   })
@@ -65,9 +63,8 @@ var map = new ol.Map({
  * Add a click handler to the map to render the popup.
  */
 map.on('singleclick', function(evt) {
-  var coordinate = evt.coordinate;
-  var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-      coordinate, 'EPSG:3857', 'EPSG:4326'));
+  const coordinate = evt.coordinate;
+  const hdms = toStringHDMS(toLonLat(coordinate));
 
   content.innerHTML = '<p>You clicked here:</p><code>' + hdms +
       '</code>';

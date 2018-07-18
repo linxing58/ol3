@@ -1,35 +1,35 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.format.WMTSCapabilities');
-goog.require('ol.layer.Tile');
-goog.require('ol.proj');
-goog.require('ol.source.OSM');
-goog.require('ol.source.WMTS');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import WMTSCapabilities from '../src/ol/format/WMTSCapabilities.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import OSM from '../src/ol/source/OSM.js';
+import WMTS, {optionsFromCapabilities} from '../src/ol/source/WMTS.js';
 
-var parser = new ol.format.WMTSCapabilities();
-var map;
+const parser = new WMTSCapabilities();
+let map;
 
-$.ajax('data/WMTSCapabilities.xml').then(function(response) {
-  var result = parser.read(response);
-  var options = ol.source.WMTS.optionsFromCapabilities(result,
-      {layer: 'layer-7328', matrixSet: 'EPSG:3857'});
+fetch('data/WMTSCapabilities.xml').then(function(response) {
+  return response.text();
+}).then(function(text) {
+  const result = parser.read(text);
+  const options = optionsFromCapabilities(result, {
+    layer: 'layer-7328',
+    matrixSet: 'EPSG:3857'
+  });
 
-  var projection = ol.proj.get('EPSG:3857');
-  var projectionExtent = projection.getExtent();
-  map = new ol.Map({
+  map = new Map({
     layers: [
-      new ol.layer.Tile({
-        source: new ol.source.OSM(),
+      new TileLayer({
+        source: new OSM(),
         opacity: 0.7
       }),
-      new ol.layer.Tile({
+      new TileLayer({
         opacity: 1,
-        extent: projectionExtent,
-        source: new ol.source.WMTS(options)
+        source: new WMTS(/** @type {!module:ol/source/WMTS~Options} */ (options))
       })
     ],
     target: 'map',
-    view: new ol.View({
+    view: new View({
       center: [19412406.33, -5050500.21],
       zoom: 5
     })

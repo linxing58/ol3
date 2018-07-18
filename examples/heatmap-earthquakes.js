@@ -1,52 +1,53 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.layer.Heatmap');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.KML');
-goog.require('ol.source.Stamen');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import KML from '../src/ol/format/KML.js';
+import {Heatmap as HeatmapLayer, Tile as TileLayer} from '../src/ol/layer.js';
+import Stamen from '../src/ol/source/Stamen.js';
+import VectorSource from '../src/ol/source/Vector.js';
 
-var blur = $('#blur');
-var radius = $('#radius');
+const blur = document.getElementById('blur');
+const radius = document.getElementById('radius');
 
-var vector = new ol.layer.Heatmap({
-  source: new ol.source.KML({
-    extractStyles: false,
-    projection: 'EPSG:3857',
-    url: 'data/kml/2012_Earthquakes_Mag5.kml'
+const vector = new HeatmapLayer({
+  source: new VectorSource({
+    url: 'data/kml/2012_Earthquakes_Mag5.kml',
+    format: new KML({
+      extractStyles: false
+    })
   }),
-  blur: parseInt(blur.val(), 10),
-  radius: parseInt(radius.val(), 10)
+  blur: parseInt(blur.value, 10),
+  radius: parseInt(radius.value, 10)
 });
 
 vector.getSource().on('addfeature', function(event) {
   // 2012_Earthquakes_Mag5.kml stores the magnitude of each earthquake in a
   // standards-violating <magnitude> tag in each Placemark.  We extract it from
   // the Placemark's name instead.
-  var name = event.feature.get('name');
-  var magnitude = parseFloat(name.substr(2));
+  const name = event.feature.get('name');
+  const magnitude = parseFloat(name.substr(2));
   event.feature.set('weight', magnitude - 5);
 });
 
-var raster = new ol.layer.Tile({
-  source: new ol.source.Stamen({
+const raster = new TileLayer({
+  source: new Stamen({
     layer: 'toner'
   })
 });
 
-var map = new ol.Map({
+const map = new Map({
   layers: [raster, vector],
   target: 'map',
-  view: new ol.View({
+  view: new View({
     center: [0, 0],
     zoom: 2
   })
 });
 
 
-blur.on('input', function() {
-  vector.setBlur(parseInt(blur.val(), 10));
+blur.addEventListener('input', function() {
+  vector.setBlur(parseInt(blur.value, 10));
 });
 
-radius.on('input', function() {
-  vector.setRadius(parseInt(radius.val(), 10));
+radius.addEventListener('input', function() {
+  vector.setRadius(parseInt(radius.value, 10));
 });

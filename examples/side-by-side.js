@@ -1,41 +1,26 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.has');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.MapQuest');
+import Map from '../src/ol/Map.js';
+import WebGLMap from '../src/ol/WebGLMap.js';
+import View from '../src/ol/View.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import OSM from '../src/ol/source/OSM.js';
 
-
-var domMap = new ol.Map({
-  layers: [
-    new ol.layer.Tile({
-      source: new ol.source.MapQuest({layer: 'sat'})
-    })
-  ],
-  renderer: 'dom',
-  target: 'domMap',
-  view: new ol.View({
-    center: [0, 0],
-    zoom: 1
-  })
+const layer = new TileLayer({
+  source: new OSM()
 });
 
-if (ol.has.WEBGL) {
-  var webglMap = new ol.Map({
-    renderer: 'webgl',
-    target: 'webglMap'
-  });
-  webglMap.bindTo('layergroup', domMap);
-  webglMap.bindTo('view', domMap);
-} else {
-  var info = document.getElementById('no-webgl');
-  /**
-   * display error message
-   */
-  info.style.display = '';
-}
-
-var canvasMap = new ol.Map({
-  target: 'canvasMap'
+const view = new View({
+  center: [0, 0],
+  zoom: 1
 });
-canvasMap.bindTo('layergroup', domMap);
-canvasMap.bindTo('view', domMap);
+
+const map1 = new Map({
+  target: 'canvasMap',
+  layers: [layer],
+  view: view
+});
+
+const map2 = new WebGLMap({
+  target: 'webglMap',
+  layers: [layer],
+  view: view
+});

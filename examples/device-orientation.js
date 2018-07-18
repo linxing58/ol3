@@ -1,55 +1,51 @@
-goog.require('ol.DeviceOrientation');
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.control');
-goog.require('ol.dom.Input');
-goog.require('ol.layer.Tile');
-goog.require('ol.proj');
-goog.require('ol.source.OSM');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import {defaults as defaultControls} from '../src/ol/control.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import {toRadians} from '../src/ol/math.js';
+import OSM from '../src/ol/source/OSM.js';
 
-var projection = ol.proj.get('EPSG:3857');
-var view = new ol.View({
+const view = new View({
   center: [0, 0],
-  projection: projection,
-  extent: projection.getExtent(),
   zoom: 2
 });
-var map = new ol.Map({
+const map = new Map({
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
+    new TileLayer({
+      source: new OSM()
     })
   ],
-  renderer: exampleNS.getRendererFromQueryString(),
   target: 'map',
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+  controls: defaultControls({
+    attributionOptions: {
       collapsible: false
-    })
+    }
   }),
   view: view
 });
 
-var deviceOrientation = new ol.DeviceOrientation();
-var track = new ol.dom.Input(document.getElementById('track'));
-track.bindTo('checked', deviceOrientation, 'tracking');
+function el(id) {
+  return document.getElementById(id);
+}
 
-deviceOrientation.on('change', function(event) {
-  $('#alpha').text(deviceOrientation.getAlpha() + ' [rad]');
-  $('#beta').text(deviceOrientation.getBeta() + ' [rad]');
-  $('#gamma').text(deviceOrientation.getGamma() + ' [rad]');
-  $('#heading').text(deviceOrientation.getHeading() + ' [rad]');
-});
 
-// tilt the map
-deviceOrientation.on(['change:beta', 'change:gamma'], function(event) {
-  var center = view.getCenter();
-  var resolution = view.getResolution();
-  var beta = event.target.getBeta() || 0;
-  var gamma = event.target.getGamma() || 0;
+const gn = new GyroNorm();
 
-  center[0] -= resolution * gamma * 25;
-  center[1] += resolution * beta * 25;
+gn.init().then(function() {
+  gn.start(function(event) {
+    const center = view.getCenter();
+    const resolution = view.getResolution();
+    const alpha = toRadians(event.do.beta);
+    const beta = toRadians(event.do.beta);
+    const gamma = toRadians(event.do.gamma);
 
-  view.setCenter(view.constrainCenter(center));
+    el('alpha').innerText = alpha + ' [rad]';
+    el('beta').innerText = beta + ' [rad]';
+    el('gamma').innerText = gamma + ' [rad]';
+
+    center[0] -= resolution * gamma * 25;
+    center[1] += resolution * beta * 25;
+
+    view.setCenter(view.constrainCenter(center));
+  });
 });

@@ -1,8 +1,7 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.TileJSON');
-
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import TileJSON from '../src/ol/source/TileJSON.js';
 
 
 /**
@@ -33,10 +32,11 @@ Progress.prototype.addLoading = function() {
  * Increment the count of loaded tiles.
  */
 Progress.prototype.addLoaded = function() {
+  const this_ = this;
   setTimeout(function() {
-    ++this.loaded;
-    this.update();
-  }.bind(this), 100);
+    ++this_.loaded;
+    this_.update();
+  }, 100);
 };
 
 
@@ -44,12 +44,15 @@ Progress.prototype.addLoaded = function() {
  * Update the progress bar.
  */
 Progress.prototype.update = function() {
-  var width = (this.loaded / this.loading * 100).toFixed(1) + '%';
+  const width = (this.loaded / this.loading * 100).toFixed(1) + '%';
   this.el.style.width = width;
   if (this.loading === this.loaded) {
     this.loading = 0;
     this.loaded = 0;
-    setTimeout(this.hide.bind(this), 500);
+    const this_ = this;
+    setTimeout(function() {
+      this_.hide();
+    }, 500);
   }
 };
 
@@ -72,32 +75,30 @@ Progress.prototype.hide = function() {
   }
 };
 
-var progress = new Progress(document.getElementById('progress'));
+const progress = new Progress(document.getElementById('progress'));
 
-var source = new ol.source.TileJSON({
-  url: 'http://api.tiles.mapbox.com/v3/mapbox.world-bright.jsonp',
+const source = new TileJSON({
+  url: 'https://api.tiles.mapbox.com/v3/mapbox.world-bright.json?secure',
   crossOrigin: 'anonymous'
 });
 
-source.on('tileloadstart', function(event) {
+source.on('tileloadstart', function() {
   progress.addLoading();
 });
 
-source.on('tileloadend', function(event) {
+source.on('tileloadend', function() {
   progress.addLoaded();
 });
-source.on('tileloaderror', function(event) {
+source.on('tileloaderror', function() {
   progress.addLoaded();
 });
 
-var map = new ol.Map({
-  logo: false,
+const map = new Map({
   layers: [
-    new ol.layer.Tile({source: source})
+    new TileLayer({source: source})
   ],
-  renderer: exampleNS.getRendererFromQueryString(),
   target: 'map',
-  view: new ol.View({
+  view: new View({
     center: [0, 0],
     zoom: 2
   })

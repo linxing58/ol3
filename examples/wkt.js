@@ -1,34 +1,35 @@
-goog.require('ol.Feature');
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.format.WKT');
-goog.require('ol.layer.Tile');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.OSM');
-goog.require('ol.source.Vector');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import WKT from '../src/ol/format/WKT.js';
+import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
+import {OSM, Vector as VectorSource} from '../src/ol/source.js';
 
-var raster = new ol.layer.Tile({
-  source: new ol.source.OSM()
+const raster = new TileLayer({
+  source: new OSM()
 });
 
-var format = new ol.format.WKT();
-var feature = format.readFeature(
-    'POLYGON((10.689697265625 -25.0927734375, 34.595947265625 ' +
-        '-20.1708984375, 38.814697265625 -35.6396484375, 13.502197265625 ' +
-        '-39.1552734375, 10.689697265625 -25.0927734375))');
-feature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+const wkt = 'POLYGON((10.689 -25.092, 34.595 ' +
+    '-20.170, 38.814 -35.639, 13.502 ' +
+    '-39.155, 10.689 -25.092))';
 
-var vector = new ol.layer.Vector({
-  source: new ol.source.Vector({
+const format = new WKT();
+
+const feature = format.readFeature(wkt, {
+  dataProjection: 'EPSG:4326',
+  featureProjection: 'EPSG:3857'
+});
+
+const vector = new VectorLayer({
+  source: new VectorSource({
     features: [feature]
   })
 });
 
-var map = new ol.Map({
+const map = new Map({
   layers: [raster, vector],
   target: 'map',
-  view: new ol.View({
-    center: [2952104.019976033, -3277504.823700756],
+  view: new View({
+    center: [2952104.0199, -3277504.823],
     zoom: 4
   })
 });

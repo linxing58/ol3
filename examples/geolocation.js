@@ -1,84 +1,93 @@
-goog.require('ol.Feature');
-goog.require('ol.FeatureOverlay');
-goog.require('ol.Geolocation');
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.control');
-goog.require('ol.dom.Input');
-goog.require('ol.geom.Point');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.OSM');
-goog.require('ol.style.Circle');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Style');
+import Feature from '../src/ol/Feature.js';
+import Geolocation from '../src/ol/Geolocation.js';
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import {defaults as defaultControls} from '../src/ol/control.js';
+import Point from '../src/ol/geom/Point.js';
+import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
+import {OSM, Vector as VectorSource} from '../src/ol/source.js';
+import {Circle as CircleStyle, Fill, Stroke, Style} from '../src/ol/style.js';
 
-var view = new ol.View({
+const view = new View({
   center: [0, 0],
   zoom: 2
 });
 
-var map = new ol.Map({
+const map = new Map({
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
+    new TileLayer({
+      source: new OSM()
     })
   ],
   target: 'map',
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+  controls: defaultControls({
+    attributionOptions: {
       collapsible: false
-    })
+    }
   }),
   view: view
 });
 
-var geolocation = new ol.Geolocation({
+const geolocation = new Geolocation({
+  // enableHighAccuracy must be set to true to have the heading value.
+  trackingOptions: {
+    enableHighAccuracy: true
+  },
   projection: view.getProjection()
 });
 
-var track = new ol.dom.Input(document.getElementById('track'));
-track.bindTo('checked', geolocation, 'tracking');
+function el(id) {
+  return document.getElementById(id);
+}
+
+el('track').addEventListener('change', function() {
+  geolocation.setTracking(this.checked);
+});
 
 // update the HTML page when the position changes.
 geolocation.on('change', function() {
-  $('#accuracy').text(geolocation.getAccuracy() + ' [m]');
-  $('#altitude').text(geolocation.getAltitude() + ' [m]');
-  $('#altitudeAccuracy').text(geolocation.getAltitudeAccuracy() + ' [m]');
-  $('#heading').text(geolocation.getHeading() + ' [rad]');
-  $('#speed').text(geolocation.getSpeed() + ' [m/s]');
+  el('accuracy').innerText = geolocation.getAccuracy() + ' [m]';
+  el('altitude').innerText = geolocation.getAltitude() + ' [m]';
+  el('altitudeAccuracy').innerText = geolocation.getAltitudeAccuracy() + ' [m]';
+  el('heading').innerText = geolocation.getHeading() + ' [rad]';
+  el('speed').innerText = geolocation.getSpeed() + ' [m/s]';
 });
 
 // handle geolocation error.
 geolocation.on('error', function(error) {
-  var info = document.getElementById('info');
+  const info = document.getElementById('info');
   info.innerHTML = error.message;
   info.style.display = '';
 });
 
-var accuracyFeature = new ol.Feature();
-accuracyFeature.bindTo('geometry', geolocation, 'accuracyGeometry');
+const accuracyFeature = new Feature();
+geolocation.on('change:accuracyGeometry', function() {
+  accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+});
 
-var positionFeature = new ol.Feature();
-positionFeature.setStyle(new ol.style.Style({
-  image: new ol.style.Circle({
+const positionFeature = new Feature();
+positionFeature.setStyle(new Style({
+  image: new CircleStyle({
     radius: 6,
-    fill: new ol.style.Fill({
+    fill: new Fill({
       color: '#3399CC'
     }),
-    stroke: new ol.style.Stroke({
+    stroke: new Stroke({
       color: '#fff',
       width: 2
     })
   })
 }));
 
-positionFeature.bindTo('geometry', geolocation, 'position')
-    .transform(function() {}, function(coordinates) {
-      return coordinates ? new ol.geom.Point(coordinates) : null;
-    });
+geolocation.on('change:position', function() {
+  const coordinates = geolocation.getPosition();
+  positionFeature.setGeometry(coordinates ?
+    new Point(coordinates) : null);
+});
 
-var featuresOverlay = new ol.FeatureOverlay({
+new VectorLayer({
   map: map,
-  features: [accuracyFeature, positionFeature]
+  source: new VectorSource({
+    features: [accuracyFeature, positionFeature]
+  })
 });

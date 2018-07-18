@@ -1,21 +1,52 @@
-goog.provide('ol.test.pointer.MouseSource');
+import {listen} from '../../../../src/ol/events.js';
+import EventTarget from '../../../../src/ol/events/EventTarget.js';
+import PointerEventHandler from '../../../../src/ol/pointer/PointerEventHandler.js';
+import TouchSource from '../../../../src/ol/pointer/TouchSource.js';
+import MouseSource from '../../../../src/ol/pointer/MouseSource.js';
+import MsSource from '../../../../src/ol/pointer/MsSource.js';
+import NativeSource from '../../../../src/ol/pointer/NativeSource.js';
+
 
 describe('ol.pointer.MouseSource', function() {
-  var handler;
-  var target;
-  var eventSpy;
-  var clock;
+  let handler;
+  let target;
+  let eventSpy;
+  let clock;
 
   beforeEach(function() {
     clock = sinon.useFakeTimers();
-    target = goog.dom.createElement(goog.dom.TagName.DIV);
+    target = new EventTarget();
 
     // make sure that a mouse and touch event source is used
-    ol.has.POINTER = false;
-    ol.has.MSPOINTER = false;
-    ol.has.TOUCH = true;
+    const POINTER = false;
+    const MSPOINTER = false;
+    const TOUCH = true;
+    const originalRegisterSources = PointerEventHandler.prototype.registerSources;
+    PointerEventHandler.prototype.registerSources = function() {
+      if (POINTER) {
+        this.registerSource('native', new NativeSource(this));
+      } else if (MSPOINTER) {
+        this.registerSource('ms', new MsSource(this));
+      } else {
+        const mouseSource = new MouseSource(this);
+        this.registerSource('mouse', mouseSource);
 
-    handler = new ol.pointer.PointerEventHandler(target);
+        if (TOUCH) {
+          const touchSource = new TouchSource(this, mouseSource);
+          // set the timeout to a lower value, to speed up the tests
+          touchSource.dedupTimeout_ = 100;
+
+          this.registerSource('touch', touchSource);
+        }
+      }
+
+      // register events on the viewport element
+      this.register_();
+    };
+
+    handler = new PointerEventHandler(target);
+    PointerEventHandler.prototype.registerSources = originalRegisterSources;
+
     eventSpy = sinon.spy();
   });
 
@@ -26,7 +57,7 @@ describe('ol.pointer.MouseSource', function() {
 
   describe('simulated mouse events', function() {
     it('prevents simulated mouse events', function() {
-      goog.events.listen(handler, 'pointerdown', eventSpy);
+      listen(handler, 'pointerdown', eventSpy);
 
       // simulates that a mouse event is triggered from a touch
       simulateTouchEvent('touchstart', 10, 20);
@@ -37,7 +68,7 @@ describe('ol.pointer.MouseSource', function() {
     });
 
     it('dispatches real mouse events', function() {
-      goog.events.listen(handler, 'pointerdown', eventSpy);
+      listen(handler, 'pointerdown', eventSpy);
 
       // the two events are at different positions
       simulateTouchEvent('touchstart', 10, 20);
@@ -47,10 +78,7 @@ describe('ol.pointer.MouseSource', function() {
     });
 
     it('dispatches real mouse events after timeout', function() {
-      // set the timeout to a lower value, to speed up the tests
-      ol.pointer.TouchSource.DEDUP_TIMEOUT = 100;
-
-      goog.events.listen(handler, 'pointerdown', eventSpy);
+      listen(handler, 'pointerdown', eventSpy);
 
       // first simulate a touch event, then a mouse event
       // at the same position after a timeout
@@ -63,40 +91,28 @@ describe('ol.pointer.MouseSource', function() {
   });
 
   function simulateTouchEvent(type, x, y) {
-    var touches = [
-      {
-        identifier: 4,
-        clientX: x,
-        clientY: y,
-        target: target
-      }
-    ];
+    const touches = [{
+      identifier: 4,
+      clientX: x,
+      clientY: y,
+      target: target
+    }];
 
-    var event = new goog.events.BrowserEvent({
+    const event = {
       type: type,
       touches: touches,
       changedTouches: touches
-    });
-    goog.events.fireListeners(target, type, false, event);
+    };
+    target.dispatchEvent(event);
   }
 
   function simulateEvent(type, x, y) {
-    var event = new goog.events.BrowserEvent({
+    const event = {
       type: type,
       clientX: x,
       clientY: y,
       target: target
-    });
-    goog.events.fireListeners(target, type, false, event);
+    };
+    target.dispatchEvent(event);
   }
 });
-
-goog.require('goog.dom');
-goog.require('goog.dom.TagName');
-goog.require('goog.events');
-goog.require('goog.events.BrowserEvent');
-goog.require('ol.has');
-goog.require('ol.pointer.MouseSource');
-goog.require('ol.pointer.PointerEvent');
-goog.require('ol.pointer.PointerEventHandler');
-goog.require('ol.pointer.TouchSource');

@@ -1,14 +1,15 @@
-goog.provide('ol.test.ResolutionConstraint');
+import {createSnapToResolutions, createSnapToPower} from '../../../src/ol/resolutionconstraint.js';
 
-describe('ol.ResolutionConstraint', function() {
+
+describe('ol.resolutionconstraint', function() {
 
   describe('SnapToResolution', function() {
 
-    var resolutionConstraint;
+    let resolutionConstraint;
 
     beforeEach(function() {
-      resolutionConstraint = ol.ResolutionConstraint.createSnapToResolutions(
-          [1000, 500, 250, 100]);
+      resolutionConstraint = createSnapToResolutions(
+        [1000, 500, 250, 100]);
     });
 
     describe('delta 0', function() {
@@ -41,12 +42,12 @@ describe('ol.ResolutionConstraint', function() {
 
   describe('SnapToResolutions Nearest', function() {
 
-    var resolutionConstraint;
+    let resolutionConstraint;
 
     beforeEach(function() {
       resolutionConstraint =
-          ol.ResolutionConstraint.createSnapToResolutions(
-              [1000, 500, 250, 100]);
+          createSnapToResolutions(
+            [1000, 500, 250, 100]);
     });
 
     describe('delta 0', function() {
@@ -91,11 +92,11 @@ describe('ol.ResolutionConstraint', function() {
 
   describe('createSnapToPower', function() {
 
-    var resolutionConstraint;
+    let resolutionConstraint;
 
     beforeEach(function() {
       resolutionConstraint =
-          ol.ResolutionConstraint.createSnapToPower(2, 1024, 10);
+          createSnapToPower(2, 1024, 10);
     });
 
     describe('delta 0', function() {
@@ -149,11 +150,11 @@ describe('ol.ResolutionConstraint', function() {
 
   describe('createSnapToPower Nearest', function() {
 
-    var resolutionConstraint;
+    let resolutionConstraint;
 
     beforeEach(function() {
       resolutionConstraint =
-          ol.ResolutionConstraint.createSnapToPower(2, 1024, 10);
+          createSnapToPower(2, 1024, 10);
     });
 
     describe('delta 0, direction 0', function() {
@@ -238,5 +239,3 @@ describe('ol.ResolutionConstraint', function() {
     });
   });
 });
-
-goog.require('ol.ResolutionConstraint');

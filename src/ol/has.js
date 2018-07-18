@@ -1,10 +1,33 @@
-goog.provide('ol.has');
+/**
+ * @module ol/has
+ */
 
-goog.require('goog.dom');
-goog.require('goog.dom.TagName');
-goog.require('ol');
-goog.require('ol.dom');
-goog.require('ol.webgl');
+const ua = typeof navigator !== 'undefined' ?
+  navigator.userAgent.toLowerCase() : '';
+
+/**
+ * User agent string says we are dealing with Firefox as browser.
+ * @type {boolean}
+ */
+export const FIREFOX = ua.indexOf('firefox') !== -1;
+
+/**
+ * User agent string says we are dealing with Safari as browser.
+ * @type {boolean}
+ */
+export const SAFARI = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') == -1;
+
+/**
+ * User agent string says we are dealing with a WebKit engine.
+ * @type {boolean}
+ */
+export const WEBKIT = ua.indexOf('webkit') !== -1 && ua.indexOf('edge') == -1;
+
+/**
+ * User agent string says we are dealing with a Mac as platform.
+ * @type {boolean}
+ */
+export const MAC = ua.indexOf('macintosh') !== -1;
 
 
 /**
@@ -12,89 +35,42 @@ goog.require('ol.webgl');
  * (dips) on the device (`window.devicePixelRatio`).
  * @const
  * @type {number}
- * @api stable
+ * @api
  */
-ol.has.DEVICE_PIXEL_RATIO = goog.global.devicePixelRatio || 1;
-
-
-/**
- * True if the browser supports ArrayBuffers.
- * @const
- * @type {boolean}
- */
-ol.has.ARRAY_BUFFER = 'ArrayBuffer' in goog.global;
+export const DEVICE_PIXEL_RATIO = window.devicePixelRatio || 1;
 
 
 /**
  * True if the browser's Canvas implementation implements {get,set}LineDash.
  * @type {boolean}
  */
-ol.has.CANVAS_LINE_DASH = false;
-
-
-/**
- * True if browser supports Canvas.
- * @const
- * @type {boolean}
- * @api stable
- */
-ol.has.CANVAS = ol.ENABLE_CANVAS && (
-    /**
-     * @return {boolean} Canvas supported.
-     */
-    function() {
-      if (!('HTMLCanvasElement' in goog.global)) {
-        return false;
-      }
-      try {
-        var context = ol.dom.createCanvasContext2D();
-        if (goog.isNull(context)) {
-          return false;
-        } else {
-          if (goog.isDef(context.setLineDash)) {
-            ol.has.CANVAS_LINE_DASH = true;
-          }
-          return true;
-        }
-      } catch (e) {
-        return false;
-      }
-    })();
-
-
-/**
- * Indicates if DeviceOrientation is supported in the user's browser.
- * @const
- * @type {boolean}
- * @api stable
- */
-ol.has.DEVICE_ORIENTATION = 'DeviceOrientationEvent' in goog.global;
-
-
-/**
- * True if browser supports DOM.
- * @const
- * @type {boolean}
- */
-ol.has.DOM = ol.ENABLE_DOM;
+export const CANVAS_LINE_DASH = function() {
+  let has = false;
+  try {
+    has = !!document.createElement('CANVAS').getContext('2d').setLineDash;
+  } catch (e) {
+    // pass
+  }
+  return has;
+}();
 
 
 /**
  * Is HTML5 geolocation supported in the current browser?
  * @const
  * @type {boolean}
- * @api stable
+ * @api
  */
-ol.has.GEOLOCATION = 'geolocation' in goog.global.navigator;
+export const GEOLOCATION = 'geolocation' in navigator;
 
 
 /**
  * True if browser supports touch events.
  * @const
  * @type {boolean}
- * @api stable
+ * @api
  */
-ol.has.TOUCH = ol.ASSUME_TOUCH || 'ontouchstart' in goog.global;
+export const TOUCH = 'ontouchstart' in window;
 
 
 /**
@@ -102,7 +78,7 @@ ol.has.TOUCH = ol.ASSUME_TOUCH || 'ontouchstart' in goog.global;
  * @const
  * @type {boolean}
  */
-ol.has.POINTER = 'PointerEvent' in goog.global;
+export const POINTER = 'PointerEvent' in window;
 
 
 /**
@@ -110,41 +86,7 @@ ol.has.POINTER = 'PointerEvent' in goog.global;
  * @const
  * @type {boolean}
  */
-ol.has.MSPOINTER = !!(goog.global.navigator.msPointerEnabled);
+export const MSPOINTER = !!(navigator.msPointerEnabled);
 
 
-/**
- * True if browser supports WebGL.
- * @const
- * @type {boolean}
- * @api stable
- */
-ol.has.WEBGL;
-
-
-(function() {
-  if (ol.ENABLE_WEBGL) {
-    var hasWebGL = false;
-    var textureSize;
-    var /** @type {Array.<string>} */ extensions = [];
-
-    if ('WebGLRenderingContext' in goog.global) {
-      try {
-        var canvas = /** @type {HTMLCanvasElement} */
-            (goog.dom.createElement(goog.dom.TagName.CANVAS));
-        var gl = ol.webgl.getContext(canvas, {
-          failIfMajorPerformanceCaveat: true
-        });
-        if (!goog.isNull(gl)) {
-          hasWebGL = true;
-          textureSize = /** @type {number} */
-              (gl.getParameter(gl.MAX_TEXTURE_SIZE));
-          extensions = gl.getSupportedExtensions();
-        }
-      } catch (e) {}
-    }
-    ol.has.WEBGL = hasWebGL;
-    ol.WEBGL_EXTENSIONS = extensions;
-    ol.WEBGL_MAX_TEXTURE_SIZE = textureSize;
-  }
-})();
+export {HAS as WEBGL} from './webgl.js';

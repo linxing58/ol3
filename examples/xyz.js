@@ -1,45 +1,20 @@
-goog.require('ol.Attribution');
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.control');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.OSM');
-goog.require('ol.source.XYZ');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import XYZ from '../src/ol/source/XYZ.js';
 
 
-var attribution = new ol.Attribution({
-  html: 'Tiles &copy; <a href="http://maps.nls.uk/townplans/glasgow_1.html">' +
-      'National Library of Scotland</a>'
-});
-
-var map = new ol.Map({
+const map = new Map({
   target: 'map',
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-      collapsible: false
-    })
-  }),
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM({
-        attributions: [
-          new ol.Attribution({
-            html: 'Tiles &copy; <a href="http://www.opencyclemap.org/">' +
-                'OpenCycleMap</a>'
-          }),
-          ol.source.OSM.ATTRIBUTION
-        ],
-        url: 'http://{a-c}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png'
-      })
-    }),
-    new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: [attribution],
-        url: 'http://geo.nls.uk/maps/towns/glasgow1857/{z}/{x}/{-y}.png'
+    new TileLayer({
+      source: new XYZ({
+        url: 'https://{a-c}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png' +
+            '?apikey=0e6fc415256d4fbb9b5166a718591d71'
       })
     })
   ],
-  view: new ol.View({
+  view: new View({
     center: [-472202, 7530279],
     zoom: 12
   })

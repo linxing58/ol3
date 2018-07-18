@@ -1,20 +1,20 @@
-goog.provide('ol.test.geom.Circle');
+import Circle from '../../../../src/ol/geom/Circle.js';
 
 
 describe('ol.geom.Circle', function() {
 
   describe('with a unit circle', function() {
 
-    var circle;
+    let circle;
     beforeEach(function() {
-      circle = new ol.geom.Circle([0, 0], 1);
+      circle = new Circle([0, 0], 1);
     });
 
     describe('#clone', function() {
 
       it('returns a clone', function() {
-        var clone = circle.clone();
-        expect(clone).to.be.an(ol.geom.Circle);
+        const clone = circle.clone();
+        expect(clone).to.be.an(Circle);
         expect(clone.getCenter()).to.eql(circle.getCenter());
         expect(clone.getCenter()).not.to.be(circle.getCenter());
         expect(clone.getRadius()).to.be(circle.getRadius());
@@ -22,31 +22,31 @@ describe('ol.geom.Circle', function() {
 
     });
 
-    describe('#containsCoordinate', function() {
+    describe('#intersectsCoordinate', function() {
 
       it('contains the center', function() {
-        expect(circle.containsCoordinate([0, 0])).to.be(true);
+        expect(circle.intersectsCoordinate([0, 0])).to.be(true);
       });
 
       it('contains points inside the perimeter', function() {
-        expect(circle.containsCoordinate([0.5, 0.5])).to.be(true);
-        expect(circle.containsCoordinate([-0.5, 0.5])).to.be(true);
-        expect(circle.containsCoordinate([-0.5, -0.5])).to.be(true);
-        expect(circle.containsCoordinate([0.5, -0.5])).to.be(true);
+        expect(circle.intersectsCoordinate([0.5, 0.5])).to.be(true);
+        expect(circle.intersectsCoordinate([-0.5, 0.5])).to.be(true);
+        expect(circle.intersectsCoordinate([-0.5, -0.5])).to.be(true);
+        expect(circle.intersectsCoordinate([0.5, -0.5])).to.be(true);
       });
 
       it('contains points on the perimeter', function() {
-        expect(circle.containsCoordinate([1, 0])).to.be(true);
-        expect(circle.containsCoordinate([0, 1])).to.be(true);
-        expect(circle.containsCoordinate([-1, 0])).to.be(true);
-        expect(circle.containsCoordinate([0, -1])).to.be(true);
+        expect(circle.intersectsCoordinate([1, 0])).to.be(true);
+        expect(circle.intersectsCoordinate([0, 1])).to.be(true);
+        expect(circle.intersectsCoordinate([-1, 0])).to.be(true);
+        expect(circle.intersectsCoordinate([0, -1])).to.be(true);
       });
 
       it('does not contain points outside the perimeter', function() {
-        expect(circle.containsCoordinate([2, 0])).to.be(false);
-        expect(circle.containsCoordinate([1, 1])).to.be(false);
-        expect(circle.containsCoordinate([-2, 0])).to.be(false);
-        expect(circle.containsCoordinate([0, -2])).to.be(false);
+        expect(circle.intersectsCoordinate([2, 0])).to.be(false);
+        expect(circle.intersectsCoordinate([1, 1])).to.be(false);
+        expect(circle.intersectsCoordinate([-2, 0])).to.be(false);
+        expect(circle.intersectsCoordinate([0, -2])).to.be(false);
       });
 
     });
@@ -62,7 +62,7 @@ describe('ol.geom.Circle', function() {
     describe('#getClosestPoint', function() {
 
       it('returns the closest point on the perimeter', function() {
-        var closestPoint;
+        let closestPoint;
         closestPoint = circle.getClosestPoint([2, 0]);
         expect(closestPoint[0]).to.roughlyEqual(1, 1e-15);
         expect(closestPoint[1]).to.roughlyEqual(0, 1e-15);
@@ -90,9 +90,9 @@ describe('ol.geom.Circle', function() {
       });
 
       it('maintains Z coordinates', function() {
-        var circle = new ol.geom.Circle([0, 0, 1], 1);
-        expect(circle.getLayout()).to.be(ol.geom.GeometryLayout.XYZ);
-        var closestPoint = circle.getClosestPoint([2, 0]);
+        const circle = new Circle([0, 0, 1], 1);
+        expect(circle.getLayout()).to.be('XYZ');
+        const closestPoint = circle.getClosestPoint([2, 0]);
         expect(closestPoint).to.have.length(3);
         expect(closestPoint[0]).to.roughlyEqual(1, 1e-15);
         expect(closestPoint[1]).to.roughlyEqual(0, 1e-15);
@@ -100,9 +100,9 @@ describe('ol.geom.Circle', function() {
       });
 
       it('maintains M coordinates', function() {
-        var circle = new ol.geom.Circle([0, 0, 2], 1,
-            ol.geom.GeometryLayout.XYM);
-        var closestPoint = circle.getClosestPoint([2, 0]);
+        const circle = new Circle([0, 0, 2], 1,
+          'XYM');
+        const closestPoint = circle.getClosestPoint([2, 0]);
         expect(closestPoint).to.have.length(3);
         expect(closestPoint[0]).to.roughlyEqual(1, 1e-15);
         expect(closestPoint[1]).to.roughlyEqual(0, 1e-15);
@@ -110,9 +110,9 @@ describe('ol.geom.Circle', function() {
       });
 
       it('maintains Z and M coordinates', function() {
-        var circle = new ol.geom.Circle([0, 0, 1, 2], 1);
-        expect(circle.getLayout()).to.be(ol.geom.GeometryLayout.XYZM);
-        var closestPoint = circle.getClosestPoint([2, 0]);
+        const circle = new Circle([0, 0, 1, 2], 1);
+        expect(circle.getLayout()).to.be('XYZM');
+        const closestPoint = circle.getClosestPoint([2, 0]);
         expect(closestPoint).to.have.length(4);
         expect(closestPoint[0]).to.roughlyEqual(1, 1e-15);
         expect(closestPoint[1]).to.roughlyEqual(0, 1e-15);
@@ -149,7 +149,7 @@ describe('ol.geom.Circle', function() {
     describe('#getType', function() {
 
       it('returns the expected value', function() {
-        expect(circle.getType()).to.be(ol.geom.GeometryType.CIRCLE);
+        expect(circle.getType()).to.be('Circle');
       });
 
     });
@@ -162,7 +162,7 @@ describe('ol.geom.Circle', function() {
       });
 
       it('fires a change event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         circle.on('change', spy);
         circle.setCenter([1, 2]);
         expect(spy.calledOnce).to.be(true);
@@ -173,16 +173,9 @@ describe('ol.geom.Circle', function() {
     describe('#setFlatCoordinates', function() {
 
       it('sets both center and radius', function() {
-        circle.setFlatCoordinates(ol.geom.GeometryLayout.XY, [1, 2, 4, 2]);
+        circle.setFlatCoordinates('XY', [1, 2, 4, 2]);
         expect(circle.getCenter()).to.eql([1, 2]);
         expect(circle.getRadius()).to.be(3);
-      });
-
-      it('fires a single change event', function() {
-        var spy = sinon.spy();
-        circle.on('change', spy);
-        circle.setFlatCoordinates(ol.geom.GeometryLayout.XY, [1, 2, 4, 2]);
-        expect(spy.calledOnce).to.be(true);
       });
 
     });
@@ -195,7 +188,7 @@ describe('ol.geom.Circle', function() {
       });
 
       it('fires a change event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         circle.on('change', spy);
         circle.setRadius(2);
         expect(spy.calledOnce).to.be(true);
@@ -203,10 +196,73 @@ describe('ol.geom.Circle', function() {
 
     });
 
+    describe('#intersectsExtent', function() {
+
+      it('returns false for non-intersecting extents (wide outside own bbox)',
+        function() {
+          const wideOutsideLeftTop = [-3, 2, -2, 3];
+          const wideOutsideRightTop = [2, 2, 3, 3];
+          const wideOutsideRightBottom = [2, -3, 3, -2];
+          const wideOutsideLeftBottom = [-3, -3, -2, -2];
+          expect(circle.intersectsExtent(wideOutsideLeftTop)).to.be(false);
+          expect(circle.intersectsExtent(wideOutsideRightTop)).to.be(false);
+          expect(circle.intersectsExtent(wideOutsideRightBottom)).to.be(false);
+          expect(circle.intersectsExtent(wideOutsideLeftBottom)).to.be(false);
+        }
+      );
+
+      it('returns false for non-intersecting extents (inside own bbox)',
+        function() {
+          const nearOutsideLeftTop = [-1, 0.9, -0.9, 1];
+          const nearOutsideRightTop = [0.9, 0.9, 1, 1];
+          const nearOutsideRightBottom = [0.9, -1, 1, -0.9];
+          const nearOutsideLeftBottom = [-1, -1, -0.9, -0.9];
+          expect(circle.intersectsExtent(nearOutsideLeftTop)).to.be(false);
+          expect(circle.intersectsExtent(nearOutsideRightTop)).to.be(false);
+          expect(circle.intersectsExtent(nearOutsideRightBottom)).to.be(false);
+          expect(circle.intersectsExtent(nearOutsideLeftBottom)).to.be(false);
+        }
+      );
+
+      it('returns true for extents that intersect clearly', function() {
+        const intersectingLeftTop = [-1.5, 0.5, -0.5, 1.5];
+        const intersectingRightTop = [0.5, 0.5, 1.5, 1.5];
+        const intersectingRightBottom = [0.5, -1.5, 1.5, -0.5];
+        const intersectingLeftBottom = [-1.5, -1.5, -0.5, -0.5];
+        expect(circle.intersectsExtent(intersectingLeftTop)).to.be(true);
+        expect(circle.intersectsExtent(intersectingRightTop)).to.be(true);
+        expect(circle.intersectsExtent(intersectingRightBottom)).to.be(true);
+        expect(circle.intersectsExtent(intersectingLeftBottom)).to.be(true);
+      });
+
+      it('returns true for extents that touch the circumference', function() {
+        const touchCircumferenceLeft = [-2, 0, -1, 1];
+        const touchCircumferenceTop = [0, 1, 1, 2];
+        const touchCircumferenceRight = [1, -1, 2, 0];
+        const touchCircumferenceBottom = [-1, -2, 0, -1];
+        expect(circle.intersectsExtent(touchCircumferenceLeft)).to.be(true);
+        expect(circle.intersectsExtent(touchCircumferenceTop)).to.be(true);
+        expect(circle.intersectsExtent(touchCircumferenceRight)).to.be(true);
+        expect(circle.intersectsExtent(touchCircumferenceBottom)).to.be(true);
+      });
+
+      it('returns true for a contained extent', function() {
+        const containedExtent = [-0.5, -0.5, 0.5, 0.5];
+        expect(circle.intersectsExtent(containedExtent)).to.be(true);
+      });
+
+      it('returns true for a covering extent', function() {
+        const bigCoveringExtent = [-5, -5, 5, 5];
+        expect(circle.intersectsExtent(bigCoveringExtent)).to.be(true);
+      });
+
+      it('returns true for the geom\'s own extent', function() {
+        const circleExtent = circle.getExtent();
+        expect(circle.intersectsExtent(circleExtent)).to.be(true);
+      });
+
+    });
+
   });
 
 });
-
-
-goog.require('ol.geom.Circle');
-goog.require('ol.geom.GeometryType');

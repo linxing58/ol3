@@ -1,37 +1,32 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.control');
-goog.require('ol.layer.Tile');
-goog.require('ol.proj');
-goog.require('ol.source.OSM');
-goog.require('ol.source.TileDebug');
-goog.require('ol.tilegrid.XYZ');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import {defaults as defaultControls} from '../src/ol/control.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import {fromLonLat} from '../src/ol/proj.js';
+import {OSM, TileDebug} from '../src/ol/source.js';
 
 
-var map = new ol.Map({
+const osmSource = new OSM();
+const map = new Map({
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
+    new TileLayer({
+      source: osmSource
     }),
-    new ol.layer.Tile({
-      source: new ol.source.TileDebug({
+    new TileLayer({
+      source: new TileDebug({
         projection: 'EPSG:3857',
-        tileGrid: new ol.tilegrid.XYZ({
-          maxZoom: 22
-        })
+        tileGrid: osmSource.getTileGrid()
       })
     })
   ],
-  renderer: exampleNS.getRendererFromQueryString(),
   target: 'map',
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+  controls: defaultControls({
+    attributionOptions: {
       collapsible: false
-    })
+    }
   }),
-  view: new ol.View({
-    center: ol.proj.transform(
-        [-0.1275, 51.507222], 'EPSG:4326', 'EPSG:3857'),
+  view: new View({
+    center: fromLonLat([-0.1275, 51.507222]),
     zoom: 10
   })
 });

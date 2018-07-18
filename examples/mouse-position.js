@@ -1,15 +1,13 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.control');
-goog.require('ol.control.MousePosition');
-goog.require('ol.coordinate');
-goog.require('ol.dom.Input');
-goog.require('ol.layer.Tile');
-goog.require('ol.proj');
-goog.require('ol.source.OSM');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import {defaults as defaultControls} from '../src/ol/control.js';
+import MousePosition from '../src/ol/control/MousePosition.js';
+import {createStringXY} from '../src/ol/coordinate.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import OSM from '../src/ol/source/OSM.js';
 
-var mousePositionControl = new ol.control.MousePosition({
-  coordinateFormat: ol.coordinate.createStringXY(4),
+const mousePositionControl = new MousePosition({
+  coordinateFormat: createStringXY(4),
   projection: 'EPSG:4326',
   // comment the following two lines to have the mouse position
   // be placed within the map.
@@ -18,39 +16,31 @@ var mousePositionControl = new ol.control.MousePosition({
   undefinedHTML: '&nbsp;'
 });
 
-var map = new ol.Map({
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+const map = new Map({
+  controls: defaultControls({
+    attributionOptions: {
       collapsible: false
-    })
+    }
   }).extend([mousePositionControl]),
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
+    new TileLayer({
+      source: new OSM()
     })
   ],
-  renderer: exampleNS.getRendererFromQueryString(),
   target: 'map',
-  view: new ol.View({
+  view: new View({
     center: [0, 0],
     zoom: 2
   })
 });
 
-var projectionSelect = new ol.dom.Input(document.getElementById('projection'));
-projectionSelect.bindTo('value', mousePositionControl, 'projection')
-  .transform(
-    function(code) {
-      // projectionSelect.value -> mousePositionControl.projection
-      return ol.proj.get(/** @type {string} */ (code));
-    },
-    function(projection) {
-      // mousePositionControl.projection -> projectionSelect.value
-      return projection.getCode();
-    });
+const projectionSelect = document.getElementById('projection');
+projectionSelect.addEventListener('change', function(event) {
+  mousePositionControl.setProjection(event.target.value);
+});
 
-var precisionInput = document.getElementById('precision');
-precisionInput.addEventListener('change', function() {
-  var format = ol.coordinate.createStringXY(precisionInput.valueAsNumber);
+const precisionInput = document.getElementById('precision');
+precisionInput.addEventListener('change', function(event) {
+  const format = createStringXY(event.target.valueAsNumber);
   mousePositionControl.setCoordinateFormat(format);
-}, false);
+});

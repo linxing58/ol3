@@ -1,15 +1,13 @@
-goog.require('ol.Feature');
-goog.require('ol.FeatureOverlay');
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.geom.Point');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.Vector');
-goog.require('ol.style.Icon');
-goog.require('ol.style.Style');
+import Feature from '../src/ol/Feature.js';
+import Map from '../src/ol/WebGLMap.js';
+import View from '../src/ol/View.js';
+import Point from '../src/ol/geom/Point.js';
+import VectorLayer from '../src/ol/layer/Vector.js';
+import VectorSource from '../src/ol/source/Vector.js';
+import {Icon, Style} from '../src/ol/style.js';
 
 
-var iconInfo = [{
+const iconInfo = [{
   offset: [0, 0],
   opacity: 1.0,
   rotateWithView: true,
@@ -39,86 +37,82 @@ var iconInfo = [{
   size: [44, 44]
 }];
 
-var i;
+let i;
 
-var iconCount = iconInfo.length;
-var icons = new Array(iconCount);
+const iconCount = iconInfo.length;
+const icons = new Array(iconCount);
 for (i = 0; i < iconCount; ++i) {
-  var info = iconInfo[i];
-  icons[i] = new ol.style.Icon({
+  const info = iconInfo[i];
+  icons[i] = new Icon({
     offset: info.offset,
     opacity: info.opacity,
     rotateWithView: info.rotateWithView,
     rotation: info.rotation,
     scale: info.scale,
     size: info.size,
+    crossOrigin: 'anonymous',
     src: 'data/Butterfly.png'
   });
 }
 
-var featureCount = 50000;
-var features = new Array(featureCount);
-var feature, geometry;
-var e = 25000000;
+const featureCount = 50000;
+const features = new Array(featureCount);
+let feature, geometry;
+const e = 25000000;
 for (i = 0; i < featureCount; ++i) {
-  geometry = new ol.geom.Point(
-      [2 * e * Math.random() - e, 2 * e * Math.random() - e]);
-  feature = new ol.Feature(geometry);
+  geometry = new Point(
+    [2 * e * Math.random() - e, 2 * e * Math.random() - e]);
+  feature = new Feature(geometry);
   feature.setStyle(
-      new ol.style.Style({
-        image: icons[i % (iconCount - 1)]
-      })
+    new Style({
+      image: icons[i % (iconCount - 1)]
+    })
   );
   features[i] = feature;
 }
 
-var vectorSource = new ol.source.Vector({
+const vectorSource = new VectorSource({
   features: features
 });
-var vector = new ol.layer.Vector({
+const vector = new VectorLayer({
   source: vectorSource
 });
 
-// Use the "webgl" renderer by default.
-var renderer = exampleNS.getRendererFromQueryString();
-if (!renderer) {
-  renderer = 'webgl';
-}
-
-var map = new ol.Map({
-  renderer: renderer,
+const map = new Map({
   layers: [vector],
   target: document.getElementById('map'),
-  view: new ol.View({
+  view: new View({
     center: [0, 0],
     zoom: 5
   })
 });
 
-var overlayFeatures = [];
+const overlayFeatures = [];
 for (i = 0; i < featureCount; i += 30) {
-  var clone = features[i].clone();
+  const clone = features[i].clone();
   clone.setStyle(null);
   overlayFeatures.push(clone);
 }
 
-var featureOverlay = new ol.FeatureOverlay({
+new VectorLayer({
   map: map,
-  style: new ol.style.Style({
-    image: icons[iconCount - 1]
+  source: new VectorSource({
+    features: overlayFeatures
   }),
-  features: overlayFeatures
+  style: new Style({
+    image: icons[iconCount - 1]
+  })
 });
 
 map.on('click', function(evt) {
-  var info = document.getElementById('info');
+  const info = document.getElementById('info');
   info.innerHTML =
       'Hold on a second, while I catch those butterflies for you ...';
 
   window.setTimeout(function() {
-    var features = [];
-    map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
-      features.push(features);
+    const features = [];
+    map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+      features.push(feature);
       return false;
     });
 
@@ -136,7 +130,7 @@ map.on('pointermove', function(evt) {
   if (evt.dragging) {
     return;
   }
-  var pixel = map.getEventPixel(evt.originalEvent);
-  var hit = map.hasFeatureAtPixel(pixel);
+  const pixel = map.getEventPixel(evt.originalEvent);
+  const hit = map.hasFeatureAtPixel(pixel);
   map.getTarget().style.cursor = hit ? 'pointer' : '';
 });

@@ -1,24 +1,17 @@
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.control');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.OSM');
+import Map from '../src/ol/Map.js';
+import View from '../src/ol/View.js';
+import TileLayer from '../src/ol/layer/Tile.js';
+import OSM from '../src/ol/source/OSM.js';
 
 
-var map = new ol.Map({
+const map = new Map({
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
+    new TileLayer({
+      source: new OSM()
     })
   ],
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-      collapsible: false
-    })
-  }),
-  renderer: exampleNS.getRendererFromQueryString(),
   target: 'map',
-  view: new ol.View({
+  view: new View({
     center: [0, 0],
     zoom: 2
   })

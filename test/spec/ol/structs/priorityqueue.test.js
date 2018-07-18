@@ -1,61 +1,46 @@
-goog.provide('ol.test.structs.PriorityQueue');
+import PriorityQueue, {DROP} from '../../../../src/ol/structs/PriorityQueue.js';
 
 
 describe('ol.structs.PriorityQueue', function() {
 
+  const identity = function(a) {
+    return a;
+  };
+
   describe('when empty', function() {
 
-    var pq;
+    let pq;
     beforeEach(function() {
-      pq = new ol.structs.PriorityQueue(
-          goog.identityFunction, goog.identityFunction);
-    });
-
-    it('is valid', function() {
-      expect(function() {
-        pq.assertValid();
-      }).not.to.throwException();
+      pq = new PriorityQueue(identity, identity);
     });
 
     it('is empty', function() {
       expect(pq.isEmpty()).to.be(true);
     });
 
-    it('dequeue raises an exception', function() {
-      expect(function() {
-        pq.dequeue();
-      }).to.throwException();
-    });
-
     it('enqueue adds an element', function() {
-      pq.enqueue(0);
-      expect(function() {
-        pq.assertValid();
-      }).not.to.throwException();
+      const added = pq.enqueue(0);
+      expect(added).to.be(true);
       expect(pq.elements_).to.eql([0]);
       expect(pq.priorities_).to.eql([0]);
     });
 
-    it('maintains the pq property while elements are enqueued', function() {
-      var i;
-      for (i = 0; i < 32; ++i) {
-        pq.enqueue(Math.random());
-        expect(function() {
-          pq.assertValid();
-        }).not.to.throwException();
-      }
+    it('do not enqueue element with DROP priority', function() {
+      const added = pq.enqueue(Infinity);
+      expect(added).to.be(false);
+      expect(pq.elements_).to.eql([]);
+      expect(pq.priorities_).to.eql([]);
     });
 
   });
 
   describe('when populated', function() {
 
-    var elements, pq;
+    let elements, pq;
     beforeEach(function() {
       elements = [];
-      pq = new ol.structs.PriorityQueue(
-          goog.identityFunction, goog.identityFunction);
-      var element, i;
+      pq = new PriorityQueue(identity, identity);
+      let element, i;
       for (i = 0; i < 32; ++i) {
         element = Math.random();
         pq.enqueue(element);
@@ -65,7 +50,7 @@ describe('ol.structs.PriorityQueue', function() {
 
     it('dequeues elements in the correct order', function() {
       elements.sort();
-      var i;
+      let i;
       for (i = 0; i < elements.length; ++i) {
         expect(pq.dequeue()).to.be(elements[i]);
       }
@@ -76,21 +61,21 @@ describe('ol.structs.PriorityQueue', function() {
 
   describe('with an impure priority function', function() {
 
-    var pq, target;
+    let pq, target;
     beforeEach(function() {
       target = 0.5;
-      pq = new ol.structs.PriorityQueue(function(element) {
+      pq = new PriorityQueue(function(element) {
         return Math.abs(element - target);
-      }, goog.identityFunction);
-      var i;
+      }, identity);
+      let i;
       for (i = 0; i < 32; ++i) {
         pq.enqueue(Math.random());
       }
     });
 
     it('dequeue elements in the correct order', function() {
-      var lastDelta = 0;
-      var delta;
+      let lastDelta = 0;
+      let delta;
       while (!pq.isEmpty()) {
         delta = Math.abs(pq.dequeue() - target);
         expect(lastDelta <= delta).to.be(true);
@@ -99,10 +84,10 @@ describe('ol.structs.PriorityQueue', function() {
     });
 
     it('allows reprioritization', function() {
-      var target = 0.5;
+      const target = 0.5;
       pq.reprioritize();
-      var lastDelta = 0;
-      var delta;
+      let lastDelta = 0;
+      let delta;
       while (!pq.isEmpty()) {
         delta = Math.abs(pq.dequeue() - target);
         expect(lastDelta <= delta).to.be(true);
@@ -111,19 +96,19 @@ describe('ol.structs.PriorityQueue', function() {
     });
 
     it('allows dropping during reprioritization', function() {
-      var target = 0.5;
-      var i = 0;
+      const target = 0.5;
+      let i = 0;
       pq.priorityFunction_ = function(element) {
         if (i++ % 2 === 0) {
           return Math.abs(element - target);
         } else {
-          return ol.structs.PriorityQueue.DROP;
+          return DROP;
         }
       };
       pq.reprioritize();
       expect(pq.getCount()).to.be(16);
-      var lastDelta = 0;
-      var delta;
+      let lastDelta = 0;
+      let delta;
       while (!pq.isEmpty()) {
         delta = Math.abs(pq.dequeue() - target);
         expect(lastDelta <= delta).to.be(true);
@@ -135,10 +120,9 @@ describe('ol.structs.PriorityQueue', function() {
 
   describe('tracks elements in the queue', function() {
 
-    var pq;
+    let pq;
     beforeEach(function() {
-      pq = new ol.structs.PriorityQueue(
-          goog.identityFunction, goog.identityFunction);
+      pq = new PriorityQueue(identity, identity);
       pq.enqueue('a');
       pq.enqueue('b');
       pq.enqueue('c');
@@ -181,6 +165,3 @@ describe('ol.structs.PriorityQueue', function() {
   });
 
 });
-
-
-goog.require('ol.structs.PriorityQueue');
